@@ -22,13 +22,14 @@ gem "webmock"
 gem "braintree", ">= 2.92.0"
 gem "stripe", "~> 8.0"
 gem "paddle_pay", "~> 0.2"
+gem "razorpay"
 
 gem "receipts"
 gem "prawn", github: "prawnpdf/prawn"
 
 # Test against different databases
 gem "pg"
-gem "mysql2"
+# gem "mysql2"
 gem "sqlite3", "~> 1.6.0.rc2"
 
 # Used for the dummy Rails app integration

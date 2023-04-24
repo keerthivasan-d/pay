@@ -1,6 +1,6 @@
 class User < ApplicationRecord
-  pay_customer
-  # pay_customer stripe_attributes: :stripe_attributes
+  # pay_customer
+  pay_customer razorpay_attributes: :razorpay_attributes
   # pay_customer stripe_attributes: ->(pay_customer) { { metadata: { user_id: pay_customer.owner_id } } }
 
   def stripe_attributes(pay_customer)
@@ -11,6 +11,14 @@ class User < ApplicationRecord
         postal_code: "90210"
       },
       metadata: {
+        user_id: id # or pay_customer.owner_id
+      }
+    }
+  end
+
+  def razorpay_attributes(pay_customer)
+    {
+      notes: {
         user_id: id # or pay_customer.owner_id
       }
     }

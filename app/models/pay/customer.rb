@@ -18,11 +18,12 @@ module Pay
     # Account(s) for marketplace payments
     store_accessor :data, :stripe_account
     store_accessor :data, :braintree_account
+    store_accessor :data, :razorpay_account
 
     delegate :email, to: :owner
     delegate_missing_to :pay_processor
 
-    %w[stripe braintree paddle fake_processor].each do |processor_name|
+    %w[stripe braintree paddle fake_processor razorpay].each do |processor_name|
       scope processor_name, -> { where(processor: processor_name) }
 
       define_method "#{processor_name}?" do

@@ -108,6 +108,9 @@ GEM
     globalid (1.1.0)
       activesupport (>= 5.0)
     hashdiff (1.0.1)
+    httparty (0.21.0)
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     importmap-rails (1.1.5)
@@ -128,11 +131,10 @@ GEM
     matrix (0.4.2)
     method_source (1.0.0)
     mini_mime (1.1.2)
-    mini_portile2 (2.8.1)
     minitest (5.18.0)
     mocha (2.0.2)
       ruby2_keywords (>= 0.0.5)
-    mysql2 (0.5.5)
+    multi_xml (0.6.0)
     net-imap (0.3.4)
       date
       net-protocol
@@ -143,9 +145,6 @@ GEM
     net-smtp (0.3.3)
       net-protocol
     nio4r (2.5.9)
-    nokogiri (1.14.3)
-      mini_portile2 (~> 2.8.0)
-      racc (~> 1.4)
     nokogiri (1.14.3-x86_64-darwin)
       racc (~> 1.4)
     nokogiri (1.14.3-x86_64-linux)
@@ -198,6 +197,8 @@ GEM
       zeitwerk (~> 2.5)
     rainbow (3.1.1)
     rake (13.0.6)
+    razorpay (3.0.0)
+      httparty (~> 0.14)
     receipts (2.2.0)
       prawn (>= 1.3.0, < 3.0.0)
       prawn-table (~> 0.2.1)
@@ -227,8 +228,6 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
-    sqlite3 (1.6.2)
-      mini_portile2 (~> 2.8.0)
     sqlite3 (1.6.2-x86_64-darwin)
     sqlite3 (1.6.2-x86_64-linux)
     standard (1.26.0)
@@ -264,7 +263,6 @@ GEM
     zeitwerk (2.6.7)
 
 PLATFORMS
-  ruby
   x86_64-darwin-22
   x86_64-linux
 
@@ -274,7 +272,6 @@ DEPENDENCIES
   byebug
   importmap-rails
   mocha
-  mysql2
   net-imap
   net-pop
   net-smtp
@@ -284,6 +281,7 @@ DEPENDENCIES
   pg
   prawn!
   puma
+  razorpay
   receipts
   sprockets-rails
   sqlite3 (~> 1.6.0.rc2)
@@ -296,4 +294,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   2.4.12
+   2.4.9

@@ -20,5 +20,6 @@ module Dummy
     # Set the ActionMailer preview path to the gem test directory
     config.action_mailer.show_previews = true
     config.action_mailer.preview_path = Rails.root.join("../../test/mailers/previews")
+    config.autoload_paths << Rails.root.join("../../../pay/")
   end
 end
