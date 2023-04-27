@@ -20,7 +20,7 @@ module Pay
 
       def self.sync(subscription_id, object: nil, name: nil, try: 0, retries: 1)
         # Skip loading the latest subscription details from the API if we already have it
-        object ||= ::Stripe::Subscription.retrieve({id: subscription_id}.merge(expand_options), {stripe_account: stripe_account}.compact)
+        object ||= ::Razorpay::Subscription.fetch(subscription_id)
         
         pay_customer = Pay::Customer.find_by(processor: :razorpay, processor_id: object.customer_id)
         return unless pay_customer
@@ -34,7 +34,7 @@ module Pay
           subscription_items: [],
           metered: false,
           current_period_start: (object.current_start ? Time.at(object.current_start) : nil),
-          current_period_end: (object.current_start ? Time.at(object.current_start) : nil)
+          current_period_end: (object.current_end ? Time.at(object.current_end) : nil)
         }
 
 

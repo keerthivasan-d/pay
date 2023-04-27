@@ -3,6 +3,21 @@
 Rails.application.routes.draw do
   resource :payment_method
 
+  namespace :razorpay do
+    resource :payment_method, namespace: :razorpay
+    resources :subscriptions do
+      member do
+        patch :cancel
+        patch :resume
+      end
+    end
+    resources :charges do
+      member do
+        patch :refund
+      end
+    end
+  end
+
   namespace :braintree do
     resource :payment_method, namespace: :braintree
     resources :subscriptions do

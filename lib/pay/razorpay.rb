@@ -2,7 +2,7 @@ module Pay
   module Razorpay
     autoload :Billable, "pay/razorpay/billable"
     # autoload :Charge, "pay/razorpay/charge"
-    # autoload :Error, "pay/razorpay/error"
+    autoload :Error, "pay/razorpay/error"
     # autoload :PaymentMethod, "pay/razorpay/payment_method"
     autoload :Subscription, "pay/razorpay/subscription"
     # autoload :Merchant, "pay/razorpay/merchant"

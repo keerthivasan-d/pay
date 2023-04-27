@@ -1,0 +1,27 @@
+<button id = "rzp-button1">Pay</button>
+<script src = "https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  var options = {
+    "key": "rzp_test_2rCF7TE4tp3e26",
+    "subscription_id": "sub_LhaAEg9CMGM0t7",
+    "name": "Acme Corp.",
+    "description": "Monthly Test Plan",
+    "handler": function(response) {
+      alert(response.razorpay_payment_id),
+      alert(response.razorpay_subscription_id),
+      alert(response.razorpay_signature);
+    },
+    "notes": {
+      "note_key_1": "Tea. Earl Grey. Hot",
+      "note_key_2": "Make it so."
+    },
+    "theme": {
+      "color": "#F37254"
+    }
+  };
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button1').onclick = function(e) {
+  rzp1.open();
+  e.preventDefault();
+}
+</script>

@@ -86,22 +86,17 @@ module Pay
         # raise customer.id.to_json
         # raise options.to_json
         # quantity = options.delete(:quantity)
-        plan_id = 'plan_Lfe8F37e04GtQ1'
+
+        trial_period_days = options.delete(:trial_period_days)
+        promotion_code = options.delete(:promotion_code)
+        
         opts = {
-          plan_id: plan_id,
+          plan_id: plan,
           customer_notify: 1, # send email/SMS notification to customer
           total_count: 12, # number of payments
-          addons: [
-            {
-              item: {
-                name: 'Add-on',
-                amount: 200,
-                currency: 'INR'
-              },
-              quantity: 1
-            }
-          ]
         }.merge(options)
+
+        # raise opts.to_json
 
         # Load the Stripe customer to verify it exists and update payment method if needed
         opts[:customer_id] = customer.id
@@ -118,8 +113,8 @@ module Pay
         # end
 
         subscription
-      rescue ::Stripe::StripeError => e
-        raise Pay::Stripe::Error, e
+      rescue ::Razorpay::BadRequestError => e
+        raise Pay::Razorpay::Error, e
       end
         
         
