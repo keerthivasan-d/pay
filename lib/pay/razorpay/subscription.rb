@@ -74,26 +74,28 @@ module Pay
       end
 
       def subscription(**options)
-        pay_subscription
+        options[:id] = processor_id
+        @razorpay_subscription ||= ::Razorpay::Subscription.fetch(processor_id)
       end
 
-      # With trial, sets end to trial end (mimicing Stripe)
-      # Without trial, sets can ends_at to end of month
+
       def cancel(**options)
-        if pay_subscription.on_trial?
-          pay_subscription.update(ends_at: pay_subscription.trial_ends_at)
-        else
-          pay_subscription.update(ends_at: Time.current.end_of_month)
-        end
+        @razorpay_subscription = ::Razorpay::Subscription.cancel(processor_id,{cancel_at_cycle_end: 1})
+        
+        pay_subscription.update(ends_at: (on_trial? ? trial_ends_at : Time.at(@razorpay_subscription.current_end)))
+      rescue ::Razorpay::BadRequestError => e
+        raise Pay::Razorpay::Error, e
       end
 
+      # Cancels a subscription immediately
+      #
+      # cancel_now!(prorate: true)
+      # cancel_now!(invoice_now: true)
       def cancel_now!(**options)
-        ends_at = Time.current
-        pay_subscription.update(
-          status: :canceled,
-          trial_ends_at: (ends_at if pay_subscription.trial_ends_at?),
-          ends_at: ends_at
-        )
+        @razorpay_subscription = ::Razorpay::Subscription.cancel(processor_id,{cancel_at_cycle_end: 0})
+        pay_subscription.update(ends_at: Time.current, status: :canceled)
+      rescue ::Razorpay::BadRequestError => e
+        raise Pay::Razorpay::Error, e
       end
 
       def change_quantity(quantity, **options)
@@ -113,6 +115,9 @@ module Pay
       end
 
       def resume
+        unless paused?
+          raise StandardError, "You can only resume paused subscriptions."
+        end
         unless on_grace_period? || paused?
           raise StandardError, "You can only resume subscriptions within their grace period."
         end
