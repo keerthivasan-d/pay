@@ -1,19 +1,14 @@
 module Pay
   module Razorpay
     autoload :Billable, "pay/razorpay/billable"
-    # autoload :Charge, "pay/razorpay/charge"
+    autoload :Charge, "pay/razorpay/charge"
     autoload :Error, "pay/razorpay/error"
-    # autoload :PaymentMethod, "pay/razorpay/payment_method"
+    autoload :PaymentMethod, "pay/razorpay/payment_method"
     autoload :Subscription, "pay/razorpay/subscription"
     # autoload :Merchant, "pay/razorpay/merchant"
 
     module Webhooks
-      # autoload :SignatureVerifier, "pay/paddle/webhooks/signature_verifier"
-      # autoload :SubscriptionCreated, "pay/paddle/webhooks/subscription_created"
-      # autoload :SubscriptionCancelled, "pay/paddle/webhooks/subscription_cancelled"
-      # autoload :SubscriptionPaymentRefunded, "pay/paddle/webhooks/subscription_payment_refunded"
-      # autoload :SubscriptionPaymentSucceeded, "pay/paddle/webhooks/subscription_payment_succeeded"
-      # autoload :SubscriptionUpdated, "pay/paddle/webhooks/subscription_updated"
+      autoload :PaymentCaptured, "pay/razorpay/webhooks/payment_captured"
     end
 
     extend Env
@@ -39,10 +34,10 @@ module Pay
 
     def self.configure_webhooks
       Pay::Webhooks.configure do |events|
-        # # Listen to the charge event to make sure we get non-subscription
-        # # purchases as well. Invoice is only for subscriptions and manual creation
-        # # so it does not include individual charges.
-        # events.subscribe "stripe.charge.succeeded", Pay::Stripe::Webhooks::ChargeSucceeded.new
+        # Listen to the charge event to make sure we get non-subscription
+        # purchases as well. Invoice is only for subscriptions and manual creation
+        # so it does not include individual charges.
+        events.subscribe "razorpay.payment.captured", Pay::Razorpay::Webhooks::PaymentCaptured.new
         # events.subscribe "stripe.charge.refunded", Pay::Stripe::Webhooks::ChargeRefunded.new
 
         # events.subscribe "stripe.payment_intent.succeeded", Pay::Stripe::Webhooks::PaymentIntentSucceeded.new

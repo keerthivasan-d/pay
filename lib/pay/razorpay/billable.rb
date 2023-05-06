@@ -55,7 +55,7 @@ module Pay
         end
 
         razorpay_customer
-      rescue ::Razorpay::RazorpayError => e
+      rescue ::Razorpay::BadRequestError => e
         raise Pay::Razorpay::Error, e
       end
 

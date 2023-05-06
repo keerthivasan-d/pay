@@ -58,6 +58,14 @@ module Pay
           pay_subscription = pay_customer.subscriptions.create!(attributes.merge(name: name, processor_id: object.id))
         end
 
+        # Cache the Razorpay subscription on the Pay::Subscription that we return
+        pay_subscription.razorpay_subscription = object
+
+        # # Sync the latest charge if we already have it loaded (like during subscrbe), otherwise, let webhooks take care of creating it
+        # if (charge = object.try(:latest_invoice).try(:charge)) && charge.try(:status) == "succeeded"
+        #   Pay::Razorpay::Charge.sync(charge.id, stripe_account: pay_subscription.stripe_account)
+        # end
+
         pay_subscription
       rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
         try += 1
