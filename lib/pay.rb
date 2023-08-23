@@ -11,6 +11,7 @@ module Pay
   autoload :Env, "pay/env"
   autoload :NanoId, "pay/nano_id"
   autoload :Payment, "pay/payment"
+  autoload :Order, "pay/order"
   autoload :Receipts, "pay/receipts"
   autoload :Currency, "pay/currency"
 

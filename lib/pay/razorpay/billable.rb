@@ -9,14 +9,14 @@ module Pay
         :customer_name,
         :payment_method_token,
         :payment_method_token?,
-        :stripe_account,
+        :phone_number,
         to: :pay_customer
 
       def initialize(pay_customer)
         @pay_customer = pay_customer
       end
 
-      # Returns a hash of attributes for the Stripe::Customer object
+      # Returns a hash of attributes for the Razorpay::Customer object
       def customer_attributes
         owner = pay_customer.owner
         
@@ -28,6 +28,7 @@ module Pay
         end
         # Guard against attributes being returned nil
         attributes ||= {}
+        attributes[:contact] = phone_number if phone_number.present?
 
         {email: email, name: customer_name}.merge(attributes)
       end
@@ -58,11 +59,16 @@ module Pay
       rescue ::Razorpay::BadRequestError => e
         raise Pay::Razorpay::Error, e
       end
-
-      # def update_customer!(**attributes)
-      #   # return customer to fake an update
-      #   customer
-      # end
+      
+      # Syncs name and email to Stripe::Customer
+      # You can also pass in other attributes that will be merged into the default attributes
+      def update_customer!(**attributes)
+        customer unless processor_id?
+        ::Razorpay::Customer.edit(
+          processor_id,
+          customer_attributes.merge(attributes)
+        )
+      end
 
       # def charge(amount, options = {})
       #   # Make to generate a processor_id
@@ -81,6 +87,29 @@ module Pay
       #   )
       #   pay_customer.charges.create!(attributes)
       # end
+
+      def charge(amount, options = {})
+        add_payment_method(payment_method_token, default: true) if payment_method_token?
+
+        payment_method = pay_customer.default_payment_method
+        
+        args = {
+          amount: amount,
+          confirm: true,
+          currency: "usd",
+          customer: customer.id,
+          expand: ["latest_charge.refunds"],
+          payment_method: payment_method&.processor_id
+        }.merge(options)
+
+        payment_intent = ::Razorpay::Order.create(args, stripe_options)
+        Pay::Payment.new(payment_intent).validate
+
+        charge = payment_intent.latest_charge
+        Pay::Razorpay::Charge.sync(charge.id, object: charge)
+      rescue ::Stripe::StripeError => e
+        raise Pay::Stripe::Error, e
+      end
 
       def subscribe(name: Pay.default_product_name, plan: Pay.default_plan_name, **options)
         # raise customer.id.to_json
@@ -117,17 +146,12 @@ module Pay
         raise Pay::Razorpay::Error, e
       end
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+      def create_order(options = {})
+        options[:notes][:customer_id] = customer.id
+        ::Razorpay::Order.create(options)
+      rescue ::Razorpay::BadRequestError => e
+        raise Pay::Razorpay::Error, e
+      end
         
     
 

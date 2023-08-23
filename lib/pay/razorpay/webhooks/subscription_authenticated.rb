@@ -5,7 +5,6 @@ module Pay
         def call(event)
           if event.contains.include?('subscription')
             subscription = event.payload.subscription.entity
-
             pay_charge = Pay::Razorpay::Subscription.sync(subscription.id)
           end
         end

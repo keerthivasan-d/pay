@@ -7,9 +7,11 @@ module Pay
         :amount_captured,
         :invoice_id,
         :line_items,
+        :order_id,
         :payment_intent_id,
+        :status,
+        :error_description,
         :processor_id,
-        :stripe_account,
         to: :pay_charge
 
       def self.sync(payment_id, object: nil, try: 0, retries: 1)
@@ -28,12 +30,15 @@ module Pay
 
         att = {
           amount: object.amount,
-          amount_captured: object.amount,
           amount_refunded: object.amount_refunded,
+          application_fee_amount: object.try(:fee),
+          status: object.status,
+          error_description: object.try(:error_description),
           created_at: Time.at(object.created_at),
           currency: object.currency,
           discounts: [],
           line_items: [],
+          order_id: object.try(:order_id),
           metadata: object.notes,
           payment_method_type: object.method,
           total_tax_amounts: [],
@@ -102,7 +107,8 @@ module Pay
       end
 
       # def charge
-      #   ::Stripe::Charge.retrieve({id: processor_id, expand: ["customer", "invoice.subscription"]}, stripe_options)
+      #   ::Razorpay::Order
+      #   # ::Stripe::Charge.retrieve({id: processor_id, expand: ["customer", "invoice.subscription"]}, stripe_options)
       # rescue ::Stripe::StripeError => e
       #   raise Pay::Stripe::Error, e
       # end

@@ -21,6 +21,8 @@ module Pay
     store_accessor :data, :razorpay_account
 
     delegate :email, to: :owner
+    delegate :phone_number, to: :owner
+
     delegate_missing_to :pay_processor
 
     %w[stripe braintree paddle fake_processor razorpay].each do |processor_name|

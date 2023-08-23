@@ -9,6 +9,7 @@ module Pay
 
     module Webhooks
       autoload :PaymentCaptured, "pay/razorpay/webhooks/payment_captured"
+      autoload :PaymentFailed, "pay/razorpay/webhooks/payment_failed"
       autoload :SubscriptionAuthenticated, "pay/razorpay/webhooks/subscription_authenticated"
     end
 
@@ -39,6 +40,7 @@ module Pay
         # purchases as well. Invoice is only for subscriptions and manual creation
         # so it does not include individual charges.
         events.subscribe "razorpay.payment.captured", Pay::Razorpay::Webhooks::PaymentCaptured.new
+        events.subscribe "razorpay.payment.failed", Pay::Razorpay::Webhooks::PaymentFailed.new
         events.subscribe "razorpay.subscription.authenticated", Pay::Razorpay::Webhooks::SubscriptionAuthenticated.new
 
         # events.subscribe "stripe.charge.refunded", Pay::Stripe::Webhooks::ChargeRefunded.new
