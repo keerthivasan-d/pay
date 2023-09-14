@@ -24,6 +24,7 @@ module Pay
       Pay::Braintree.configure_webhooks if Pay::Braintree.enabled?
       Pay::Paddle.configure_webhooks if Pay::Paddle.enabled?
       Pay::Razorpay.configure_webhooks if Pay::Razorpay.enabled?
+      Pay::CcavenueGateway.configure_webhooks if Pay::CcavenueGateway.enabled?
     end
 
     config.to_prepare do
@@ -31,6 +32,8 @@ module Pay
       Pay::Braintree.setup if Pay::Braintree.enabled?
       Pay::Paddle.setup if Pay::Paddle.enabled?
       Pay::Razorpay.setup if Pay::Razorpay.enabled?
+      # we disabled setup during initialize and setup each instance during the we process.
+      # Pay::CcavenueGateway.setup if Pay::CcavenueGateway.enabled?
 
       if defined?(::Receipts::VERSION)
         if Pay::Engine.version_matches?(required: "~> 2", current: ::Receipts::VERSION)

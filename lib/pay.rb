@@ -21,6 +21,7 @@ module Pay
   autoload :Paddle, "pay/paddle"
   autoload :Stripe, "pay/stripe"
   autoload :Razorpay, "pay/razorpay"
+  autoload :CcavenueGateway, "pay/ccavenue_gateway"
 
   autoload :Webhooks, "pay/webhooks"
 

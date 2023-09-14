@@ -33,7 +33,8 @@ module Pay
     store_accessor :data, :amount_captured
     store_accessor :data, :invoice_id
     store_accessor :data, :payment_intent_id
-    store_accessor :data, :order_id
+    # temp disabled for ccavenue (razorpay needs this)
+    # store_accessor :data, :order_id
     store_accessor :data, :status
     store_accessor :data, :error_description
     store_accessor :data, :period_start
