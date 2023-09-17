@@ -1,7 +1,7 @@
 module Pay
   module CcavenueGateway
-    # autoload :Billable, "pay/ccavenue_gateway/billable"
-    # autoload :Charge, "pay/ccavenue_gateway/charge"
+    autoload :Billable, "pay/ccavenue_gateway/billable"
+    autoload :Charge, "pay/ccavenue_gateway/charge"
     # autoload :Error, "pay/ccavenue_gateway/error"
     # autoload :PaymentMethod, "pay/ccavenue_gateway/payment_method"
     # autoload :Subscription, "pay/ccavenue_gateway/subscription"

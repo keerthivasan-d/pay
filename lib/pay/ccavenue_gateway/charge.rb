@@ -1,5 +1,5 @@
 module Pay
-  module Razorpay
+  module CcavenueGateway
     class Charge
       attr_reader :pay_charge
 
@@ -12,14 +12,63 @@ module Pay
         :status,
         :error_description,
         :processor_id,
+        :bank_ref_no,
         to: :pay_charge
 
-      def self.sync(payment_id, object: nil, try: 0, retries: 1)
+      def self.create(enc_response, try: 0, retries: 1)
+        order = ::Order.find_by_processor_id(enc_response[:order_id])
+        return unless order
+
+        pay_customer = Pay::Customer.find_by(processor: :ccavenue_gateway, processor_id: enc_response[:merchant_param1])
+        return unless pay_customer
+
+        trans_date = (enc_response[:trans_date].nil? || enc_response[:trans_date] == "null") ? DateTime.now : DateTime.strptime(enc_response[:trans_date], "%d/%m/%Y %H:%M:%S") 
+        
+        att = {
+          processor_id: enc_response[:tracking_id],
+          bank_ref_no: enc_response[:bank_ref_no],
+          amount: (enc_response[:amount].to_i * 100),
+          status: enc_response[:order_status],
+          error_description: (enc_response[:failure_message].empty? ? enc_response[:status_message] : enc_response[:failure_message]),
+          created_at: trans_date,
+          currency: enc_response[:currency],
+          discounts: [],
+          line_items: [],
+          order_id: order.id,
+          payment_method_type: enc_response[:payment_mode],
+          total_tax_amounts: [],
+          refunds: []
+        }
+
+        attrs = att.merge(payment_method_details_for(enc_response))
+
+        attrs[:period_start] = trans_date
+        attrs[:period_end] = trans_date
+        # Update or create the charge
+        if (pay_charge = pay_customer.charges.find_by(processor_id: enc_response[:tracking_id]))
+          pay_charge.with_lock do
+            pay_charge.update!(attrs)
+          end
+          pay_charge
+        else
+          pay_customer.charges.create!(attrs.merge(processor_id: enc_response[:tracking_id]))
+        end
+      rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
+        try += 1
+        if try <= retries
+          sleep 0.1
+          retry
+        else
+          raise
+        end
+      end
+
+      def self.sync(payment_id, enc_response: nil, try: 0, retries: 1)
         # Skip loading the latest charge details from the API if we already have it
-        object ||= ::Razorpay::Payment.fetch(payment_id)
+        # enc_response ||= ::Razorpay::Payment.fetch(payment_id)
 
         # Ignore charges without a Customer
-        return if object.customer_id.blank?
+        # return if object.customer_id.blank?
 
         pay_customer = Pay::Customer.find_by(processor: :razorpay, processor_id: object.customer_id)
         return unless pay_customer
@@ -29,7 +78,7 @@ module Pay
 
 
         att = {
-          amount: object.amount,
+          amount: to_paise(object.amount),
           amount_refunded: object.amount_refunded,
           application_fee_amount: object.try(:fee),
           status: object.status,
@@ -106,6 +155,10 @@ module Pay
         @pay_charge = pay_charge
       end
 
+      def self.to_paise(amount)
+        amount * 100
+      end
+
       # def charge
       #   ::Razorpay::Order
       #   # ::Stripe::Charge.retrieve({id: processor_id, expand: ["customer", "invoice.subscription"]}, stripe_options)
@@ -168,27 +221,41 @@ module Pay
       # end
 
       def self.payment_method_details_for(payment)
-        case payment.method
-        when "card"
+        case payment[:payment_mode]
+        when "IVRS"
           {
-            payment_method_type: :card,
-            brand: payment.card['network'],
-            last4: payment.card['last4']
+            payment_method_type: :ivrs,
+            bank: payment[:card_name]
           }
-        when "wallet"
+        when "EMI"
           {
-            payment_method_type: :wallet,
-            brand: payment.wallet
+            payment_method_type: :emi,
+            bank: payment[:card_name]
           }
-        when "netbanking"
+        when "Credit Card"
+          {
+            payment_method_type: :credit_card,
+            bank: payment[:card_name]
+          }
+        when "Debit Card"
+          {
+            payment_method_type: :debit_card,
+            bank: payment[:card_name]
+          }
+        when "Net Banking"
           {
             payment_method_type: :netbanking,
-            bank: payment.bank
+            bank: payment[:card_name]
           }
-        when "upi"
+        when "Cash Card"
+          {
+            payment_method_type: :cash_card,
+            bank: payment[:card_name]
+          }
+        when "UPI"
           {
             payment_method_type: :upi,
-            brand: payment.vpa || 'upi'
+            bank: payment[:card_name]
           }                    
         else
           {}

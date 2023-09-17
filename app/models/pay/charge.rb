@@ -33,6 +33,7 @@ module Pay
     store_accessor :data, :amount_captured
     store_accessor :data, :invoice_id
     store_accessor :data, :payment_intent_id
+    store_accessor :data, :bank_ref_no
     # temp disabled for ccavenue (razorpay needs this)
     # store_accessor :data, :order_id
     store_accessor :data, :status
@@ -80,7 +81,7 @@ module Pay
     end
 
     def succeeded?
-      status == 'captured'
+      status == 'captured' || status == 'Success'
     end
 
     def refund!(refund_amount = nil)
