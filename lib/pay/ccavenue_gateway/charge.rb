@@ -23,7 +23,8 @@ module Pay
         return unless pay_customer
 
         trans_date = (enc_response[:trans_date].nil? || enc_response[:trans_date] == "null") ? DateTime.now : DateTime.strptime(enc_response[:trans_date], "%d/%m/%Y %H:%M:%S") 
-        
+        trans_date = trans_date.in_time_zone('Asia/Kolkata').utc
+
         att = {
           processor_id: enc_response[:tracking_id],
           bank_ref_no: enc_response[:bank_ref_no],
