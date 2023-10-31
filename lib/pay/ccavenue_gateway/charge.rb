@@ -22,8 +22,14 @@ module Pay
         pay_customer = Pay::Customer.find_by(processor: :ccavenue_gateway, processor_id: enc_response[:merchant_param1])
         return unless pay_customer
 
-        trans_date = (enc_response[:trans_date].nil? || enc_response[:trans_date] == "null") ? DateTime.now : DateTime.strptime(enc_response[:trans_date], "%d/%m/%Y %H:%M:%S") 
-        trans_date = trans_date.in_time_zone('Asia/Kolkata').utc
+        trans_date = if enc_response[:trans_date].nil? || enc_response[:trans_date] == "null"
+          Time.zone.now
+        else
+          ActiveSupport::TimeZone['Asia/Kolkata'].parse(enc_response[:trans_date])
+        end
+
+        utc_trans_date = trans_date.in_time_zone('UTC')
+
 
         att = {
           processor_id: enc_response[:tracking_id],
@@ -31,7 +37,7 @@ module Pay
           amount: (enc_response[:amount].to_i * 100),
           status: enc_response[:order_status],
           error_description: (enc_response[:failure_message].empty? ? enc_response[:status_message] : enc_response[:failure_message]),
-          created_at: trans_date,
+          created_at: utc_trans_date,
           currency: enc_response[:currency],
           discounts: [],
           line_items: [],
@@ -43,8 +49,8 @@ module Pay
 
         attrs = att.merge(payment_method_details_for(enc_response))
 
-        attrs[:period_start] = trans_date
-        attrs[:period_end] = trans_date
+        attrs[:period_start] = utc_trans_date
+        attrs[:period_end] = utc_trans_date
         # Update or create the charge
         if (pay_charge = pay_customer.charges.find_by(processor_id: enc_response[:tracking_id]))
           pay_charge.with_lock do
